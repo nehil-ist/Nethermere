@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nethermere Wiki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050505;--fg:#f2f2f2;--dim:#8f8f8f;--line:#2a2a2a;--card:#0d0d0d;--card2:#141414;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Cormorant Garamond",Georgia,serif;font-size:1.2rem;line-height:1.65;-webkit-font-smoothing:antialiased}
+body.noscroll{overflow:hidden}
+.black{font-family:Cinzel,"Trajan Pro",Georgia,serif;font-weight:500;letter-spacing:.06em}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+button{font:inherit;color:var(--fg);cursor:pointer}
+body.locked>*:not(#gate){display:none}
+body:not(.locked) #gate{display:none}
+
+/* spoiler gate */
+#gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:2rem;background:var(--bg);z-index:60}
+#gate .box{max-width:30rem;text-align:center}
+#gate h1{font-size:clamp(1.6rem,6vw,2.4rem);line-height:1.15;margin:0 0 1rem}
+#gate p{color:var(--dim);margin:0 0 2rem}
+.btns{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center}
+.btn{background:none;border:1px solid var(--fg);padding:.6rem 1.5rem;font-size:1.05rem;transition:background .2s,color .2s}
+.btn:hover{background:var(--fg);color:var(--bg)}
+.btn.quiet{border-color:var(--line);color:var(--dim)}
+.btn.quiet:hover{background:none;color:var(--fg);border-color:var(--fg)}
+
+/* hero */
+.hero{position:relative;text-align:center;padding:4.5rem 1.5rem 3rem;overflow:hidden;border-bottom:1px solid var(--line)}
+.ripples{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.ripples i{position:absolute;border:1px solid #fff;border-radius:50%;opacity:0;transform:translate(-50%,-50%) scale(.2);width:70vmin;height:70vmin;animation:rip 9s ease-out infinite}
+.ripples i:nth-child(2){animation-delay:3s}
+.ripples i:nth-child(3){animation-delay:6s}
+@keyframes rip{0%{opacity:.14;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
+.hero>*:not(.ripples){position:relative;z-index:1}
+.eyebrow{font-family:Cinzel,Georgia,serif;font-size:.75rem;letter-spacing:.35em;color:var(--dim);margin:0 0 1rem}
+.hero h1{font-size:clamp(2.4rem,9vw,5.5rem);line-height:1;margin:0;letter-spacing:.08em}
+.hero .sub{margin:.9rem 0 0;color:var(--dim);font-style:italic;font-size:1.3rem}
+
+/* toolbar */
+.bar{position:sticky;top:0;z-index:20;background:rgba(5,5,5,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:.9rem 1.5rem}
+.bar-in{max-width:70rem;margin:0 auto;display:flex;flex-direction:column;gap:.8rem}
+.search{display:flex;align-items:center;gap:.8rem;border:1px solid var(--line);background:var(--card);padding:.2rem 1rem;transition:border-color .2s}
+.search:focus-within{border-color:var(--fg)}
+.search svg{width:1.2rem;height:1.2rem;flex:none;stroke:var(--dim);fill:none;stroke-width:2;stroke-linecap:round}
+.search input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--fg);font:inherit;font-size:1.15rem;padding:.55rem 0}
+.search input::placeholder{color:#666}
+.search kbd{font-family:Cinzel,Georgia,serif;font-size:.7rem;color:var(--dim);border:1px solid var(--line);padding:.1rem .45rem}
+.search .clear{display:none;border:0;background:none;color:var(--dim);font-size:1.3rem;line-height:1;padding:0 .2rem}
+.search.has .clear{display:block}
+.search.has kbd{display:none}
+.chips{display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;background:none;border:1px solid var(--line);color:var(--dim);padding:.25rem .9rem;font-family:Cinzel,Georgia,serif;font-size:.72rem;letter-spacing:.14em;transition:all .15s}
+.chip:hover{border-color:var(--fg);color:var(--fg)}
+.chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.chip b{font-weight:500;opacity:.6;margin-left:.3rem}
+
+/* cards */
+.wrap{max-width:70rem;margin:0 auto;padding:1.8rem 1.5rem 5rem}
+#count{margin:0 0 1.2rem;font-family:Cinzel,Georgia,serif;font-size:.72rem;letter-spacing:.2em;color:var(--dim)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:1rem}
+.card{display:flex;flex-direction:column;text-align:left;padding:0;background:var(--card);border:1px solid var(--line);transition:border-color .2s,transform .2s,background .2s;overflow:hidden}
+.card:hover{border-color:#777;background:var(--card2);transform:translateY(-2px)}
+.card .art{display:flex;align-items:center;justify-content:center;height:7.5rem;background:#080808;border-bottom:1px solid var(--line);position:relative}
+.card .art svg{width:4.2rem;height:auto;stroke:var(--fg);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.92}
+.card .art .tag{position:absolute;top:.7rem;left:.8rem}
+.tag{font-family:Cinzel,Georgia,serif;font-size:.6rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.card .txt{padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;gap:.3rem;flex:1}
+.card h3{margin:0;font-size:1.05rem;font-weight:500;line-height:1.25}
+.card p{margin:0;color:var(--dim);font-size:1.05rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pips{display:inline-flex;gap:.28rem;margin-top:auto;padding-top:.7rem;align-items:center}
+.pips i{width:.55rem;height:.55rem;border:1px solid var(--fg);border-radius:50%}
+.pips i.f{background:var(--fg)}
+.pips small{font-family:Cinzel,Georgia,serif;font-size:.58rem;letter-spacing:.2em;color:var(--dim);margin-right:.4rem}
+#empty{text-align:center;color:var(--dim);padding:4rem 1rem;font-style:italic}
+#empty[hidden]{display:none}
+
+
+.modal{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.78);display:flex;align-items:flex-start;justify-content:center;padding:4vh 1rem;overflow-y:auto}
+.modal[hidden]{display:none}
+.sheet{position:relative;width:100%;max-width:46rem;background:var(--bg);border:1px solid #555;animation:o .3s ease}
+@keyframes o{from{opacity:0;transform:translateY(10px)}}
+.sheet .x{position:absolute;top:.6rem;right:.8rem;z-index:2;background:none;border:0;font-size:2rem;line-height:1;color:var(--dim);padding:.2rem .5rem}
+.sheet .x:hover{color:var(--fg)}
+.sheet .art{display:flex;align-items:center;justify-content:center;height:10rem;background:#080808;border-bottom:1px solid var(--line)}
+.sheet .art svg{width:6rem;height:auto;stroke:var(--fg);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sheet .in{padding:2.2rem 2.6rem 2.8rem}
+.sheet h2{margin:.3rem 0 .5rem;font-size:clamp(1.7rem,5.5vw,2.5rem);line-height:1.1}
+.sheet .sum{color:var(--dim);font-style:italic;margin:0 0 1.4rem}
+.sheet .in p{margin:0 0 1.15rem;line-height:1.8}
+.sheet .body>p:first-child{font-size:1.3rem;color:#fff}
+.sheet .verse{text-align:center;padding:1rem 0 .5rem}
+.sheet .verse>p{font-style:italic;font-size:1.45rem;line-height:1.7;margin-bottom:1.3rem}
+.sheet .verse>p:last-child{font-style:normal;font-family:Cinzel,Georgia,serif;font-size:1.05rem;letter-spacing:.12em;color:var(--dim)}
+.quest{margin:2.4rem 0 0;padding:.2rem 0 .2rem 1.4rem;border-left:1px solid #555}
+.q-label{font-family:Cinzel,Georgia,serif;font-size:.62rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.quest h3{margin:.25rem 0 1rem;font-size:1.3rem;letter-spacing:.06em}
+.info{display:grid;grid-template-columns:auto 1fr;gap:.5rem 1.4rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:1rem 0;margin:0 0 1.4rem;font-size:1.05rem}
+.info dt{font-family:Cinzel,Georgia,serif;font-size:.65rem;letter-spacing:.2em;color:var(--dim);padding-top:.3rem;text-transform:uppercase}
+.info dd{margin:0}
+a.xl{color:#fff;cursor:pointer;background:rgba(255,255,255,.13);border-bottom:1px solid #aaa;padding:0 .15em;transition:background .15s,color .15s}
+a.xl:hover{background:var(--fg);color:var(--bg)}
+.tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:1.4rem}
+.tags button{background:none;border:1px solid var(--line);color:var(--dim);padding:.1rem .7rem;font-size:.95rem}
+.tags button:hover{border-color:var(--fg);color:var(--fg)}
+
+footer{padding:2rem 1.5rem 3rem;text-align:center;color:var(--dim);font-size:1rem;border-top:1px solid var(--line)}
+footer .black{display:block;color:var(--fg);margin-bottom:.3rem;letter-spacing:.2em}
+
+@media(max-width:560px){
+  .hero{padding:3rem 1.2rem 2rem}
+  .bar{padding:.7rem 1rem}
+  .wrap{padding:1.4rem 1rem 4rem}
+  .search kbd{display:none}
+  .sheet .in{padding:1.5rem 1.2rem 2rem}
+  .quest{padding-left:.9rem}
+  .info{grid-template-columns:1fr;gap:.1rem}
+  .info dd{margin-bottom:.6rem}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ripples i{animation:none}.sheet{animation:none}.card:hover{transform:none}}
+
+/* ===== simple black and white theme ===== */
+body{background:#050505}
+body::before{display:none}
+.ripples{display:none}
+.hero{padding:3.5rem 1.5rem 1.8rem;border:0;background:none}
+.hero h1{font-size:clamp(2.2rem,8vw,3.6rem);letter-spacing:.14em}
+.hero .sub{margin-top:.7rem;color:var(--dim);font-size:1.15rem;letter-spacing:.08em}
+.bar{position:static;background:none;border:0;padding:0 1.5rem;backdrop-filter:none;-webkit-backdrop-filter:none}
+.bar-in{max-width:44rem}
+.wrap{max-width:47rem;padding:1.2rem 1.5rem 4rem}
+#count{display:none}
+.search{background:none}
+.sec{display:block;margin:2.2rem 0 .5rem}
+.sec:first-child{margin-top:.4rem}
+.sec h2{margin:0;font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);font-weight:500}
+.sec small,.sec p,.sec .seg-line{display:none}
+.cards{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.card{flex-direction:row;align-items:center;gap:1.1rem;padding:1rem .4rem;border:0;border-bottom:1px solid var(--line);background:none;transform:none;box-shadow:none;transition:background .15s}
+.card::after{display:none}
+.card:hover{background:#0f0f0f;transform:none;box-shadow:none;border-color:var(--line)}
+.card .art{height:auto;width:2.6rem;flex:none;border:0;background:none}
+.card .art svg{width:2.4rem;stroke:#cfcfcf;filter:none}
+.card .art .tag{display:none}
+.card .txt{padding:0;flex:1;gap:.1rem}
+.card h3{font-family:Cormorant Garamond,Georgia,serif;font-size:1.3rem;letter-spacing:0;font-weight:600;text-transform:none}
+.card p{color:var(--dim);-webkit-line-clamp:2;font-size:1.05rem}
+.modal{background:rgba(0,0,0,.88);-webkit-backdrop-filter:none;backdrop-filter:none}
+.sheet{max-width:40rem;border-color:#333;box-shadow:none}
+.sheet .art{height:auto;justify-content:flex-start;padding:2rem 2rem 0;background:none;border:0}
+.sheet .art svg{width:3rem;stroke:#cfcfcf;filter:none}
+.sheet .in{padding:1rem 2rem 2.4rem}
+.sheet h2{letter-spacing:.06em}
+.sheet .body>p:first-child{font-size:1.2rem;color:var(--fg)}
+.sheet .verse>p:first-child{font-size:1.45rem}
+a.xl{color:var(--fg);background:none;border-bottom:1px solid #777;padding:0}
+a.xl:hover{background:var(--fg);color:#050505}
+footer{border:0;padding-top:0}
+footer .seg{display:none}
+@media(max-width:560px){.hero{padding:2.6rem 1.2rem 1.4rem}.bar{padding:0 1rem}.wrap{padding:1rem 1rem 3rem}.sheet .art{padding:1.5rem 1.2rem 0}.sheet .in{padding:1rem 1.2rem 2rem}}
+
+/* ===== motion ===== */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes sheetIn{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes sheetOut{to{opacity:0;transform:translateY(12px) scale(.99)}}
+@keyframes bgOut{to{opacity:0}}
+@keyframes swap{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.hero h1{animation:rise .8s ease both}
+.hero .sub{animation:rise .8s .12s ease both}
+.bar{animation:rise .7s .22s ease both}
+#grid.anim .card,#grid.anim .sec{animation:rise .5s ease both;animation-delay:calc(var(--i,0)*45ms)}
+.card{transition:background .2s,padding .25s}
+.card .txt{position:relative;padding-right:1.8rem}
+.card .txt::after{content:"\2192";position:absolute;right:.2rem;top:50%;margin-top:-.8rem;font-size:1.2rem;color:var(--dim);opacity:0;transform:translateX(-8px);transition:opacity .25s,transform .25s}
+.card:hover .txt::after,.card:focus-visible .txt::after{opacity:1;transform:none}
+.card:hover{padding-left:.9rem}
+.card .art svg{transition:transform .3s,stroke .2s}
+.card:hover .art svg{transform:scale(1.12);stroke:#fff}
+.card:active{background:#161616}
+.chip{transition:background .2s,color .2s,border-color .2s,transform .12s}
+.chip:active,.btn:active{transform:scale(.95)}
+.chip.on{animation:fade .25s ease}
+.modal{animation:fade .22s ease}
+.modal.out{animation:bgOut .18s ease forwards}
+.sheet{animation:sheetIn .35s cubic-bezier(.2,.8,.2,1)}
+.modal.out .sheet{animation:sheetOut .18s ease forwards}
+.sheet .in.swap{animation:swap .3s ease}
+.sheet .quest{animation:rise .5s ease both}
+.sheet .quest:nth-of-type(1){animation-delay:.1s}
+.sheet .quest:nth-of-type(2){animation-delay:.18s}
+.sheet .quest:nth-of-type(3){animation-delay:.26s}
+.sheet .quest:nth-of-type(4){animation-delay:.34s}
+.sheet .x{transition:color .2s,transform .3s}
+.sheet .x:hover{transform:rotate(90deg)}
+a.xl{transition:background .2s,color .2s,border-color .2s}
+.tags button,.search{transition:border-color .2s,color .2s,background .2s}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* pixel icons */
+.card .art svg.px,.sheet .art svg.px{fill:#e6e6e6;stroke:none;shape-rendering:crispEdges;filter:none}
+.card .art svg.px{width:2rem;height:2rem}
+.sheet .art svg.px{width:3rem;height:3rem}
+.card:hover .art svg.px{fill:#fff;transform:none}
+
+/* credits */
+.credits{max-width:47rem;margin:0 auto;padding:1rem 1.5rem 3rem}
+.credits h2{margin:0 0 .5rem;font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);font-weight:500}
+.cr-list{border-top:1px solid var(--line)}
+.cr-row{display:grid;grid-template-columns:10rem 1fr;gap:.4rem 1.5rem;padding:1rem .4rem;border-bottom:1px solid var(--line)}
+.cr-role{font-family:Cinzel,Georgia,serif;font-size:.7rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;padding-top:.45rem}
+.cr-people{display:flex;flex-direction:column;gap:.5rem}
+.cr-p{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .8rem}
+.cr-name{font-size:1.3rem;font-weight:600}
+.cr-tag{color:var(--dim);font-size:1.05rem}
+.cr-job{font-family:Cinzel,Georgia,serif;font-size:.6rem;letter-spacing:.18em;color:var(--dim);border:1px solid var(--line);padding:.05rem .5rem;text-transform:uppercase}
+.cr-note{color:var(--dim);font-size:1rem;margin:.8rem .4rem 0}
+@media(max-width:560px){.credits{padding:1rem 1rem 2.5rem}.cr-row{grid-template-columns:1fr}.cr-role{padding-top:0}}
+</style>
+</head>
+<body class="locked">
+
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt">
+  <div class="box">
+    <h1 id="gt" class="black">Spoiler warning</h1>
+    <p>This wiki contains spoilers for Nethermere, including the story, characters and factions. Continue only if you’re okay with that.</p>
+    <div class="btns">
+      <button class="btn" id="enter">Continue</button>
+      <button class="btn quiet" id="back">Go back</button>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <h1 class="black" id="h-title"></h1>
+  <p class="sub" id="h-sub"></p>
+</header>
+
+<div class="bar">
+  <div class="bar-in">
+    <label class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search the story, characters, factions…" aria-label="Search the wiki">
+      <kbd>/</kbd>
+      <button class="clear" id="clear" type="button" aria-label="Clear search">&times;</button>
+    </label>
+    <div class="chips" id="chips" role="tablist" aria-label="Categories"></div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <p id="count" aria-live="polite"></p>
+    <div id="grid"></div>
+    <p id="empty" hidden>Nothing found. Try a different word, or switch to All.</p>
+  </div>
+</main>
+
+<section class="credits" id="credits" aria-labelledby="cr-h"></section>
+
+<footer><span class="black" id="f-title"></span><span id="f-text"></span></footer>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <button class="x" id="mclose" type="button" aria-label="Close">&times;</button>
+    <div id="mbody"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   EDIT YOUR WIKI HERE. You never need to touch anything below this block.
+
+   - Every card on the page is one entry in the ENTRIES list.
+   - To add an entry: copy one whole { ... }, paste it after a comma, and
+     change the words inside the quotes. To remove one: delete its { ... }.
+   - Keep the quotes, commas, [ ] and { } exactly as they are.
+   - If your text needs a double quote, write it as \" or use ’ instead.
+
+   Fields of an entry:
+     cat      "story", "char" or "faction"
+              (the categories themselves are in CATS just below)
+     name     the title
+     summary  one short line, shown on the card
+     icon     "centipede","beetle","moth","ant","eye","crown","sword",
+              "potion","key","tower","cave","book","shield" or "none"
+     threat   (optional) 1 to 5, shows dots. Meant for enemies.
+     info     (optional) rows of facts: [ ["Found in","The lower tunnels"], ... ]
+     text     the full article. Each string is one paragraph.
+     sections (optional) split a long story entry into labelled parts, e.g.
+              sections: [ { label: "New questline", title: "Delivery",
+                            text: ["paragraph", "paragraph"] } ]
+              label is the small line above the title (can be left out).
+     style    (optional) "verse" centres the text in large italics. Good for
+              prologues, quotes and poems.
+     aka      (optional) other spellings that should link to this entry,
+              e.g. aka: ["Molter"]. Names of characters and factions are
+              highlighted and clickable inside every article automatically.
+     tags     (optional) words people can click to search, e.g. ["boss","tunnels"]
+   ===================================================================== */
+var SITE = {
+  title: "Nethermere",
+  tagline: "the last segment",
+  quote: "Every world has an end. Nethermere has a thousand legs to reach it.",
+  footer: "The Nethermere wiki. Contains spoilers."
+};
+
+/* CREDITS: add a person with [ "Name", "@discord", "what they do (optional)" ] */
+var CREDITS = [
+  { role: "Owner",          people: [["Jordan", "@zzzncz"]] },
+  { role: "Developers",     people: [["Fuyuhiko", "@hinublox", "Scripter"], ["nx.", "@unqjokers", "Builder"]] },
+  { role: "Server Manager", people: [["Evan", "@evanalwaysright"]] },
+  { role: "Contributor",    people: [["corio8", "@corio8"]] },
+  { role: "Testers",        people: [["Flame", "@flametigersusername"], ["Jaku", "@123533man"], ["Zennie", "@.zennie_"]] }
+];
+
+var CATS = [
+  { id: "story",   label: "Story",      blurb: "The tale so far" },
+  { id: "char",    label: "Characters", blurb: "Who you meet beneath" },
+  { id: "faction", label: "Factions",   blurb: "Who stands where" }
+];
+
+var ENTRIES = [
+
+
+  /* ---------------- STORY ---------------- */
+  { cat: "story", name: "Prologue: The Wrapping", icon: "eye", style: "verse",
+    summary: "From what is left, the world begins to build you again.",
+    tags: ["prologue", "the hatchling"],
+    text: [
+      "It does not hunt you. It simply arrives.",
+      "Something old folds itself around the little that you are. Name, face, the road behind you. It takes them gently, the way a river takes a leaf.",
+      "Then, from what is left, the world begins to build you again.",
+      "Wake, Hatchling. The shell is still soft."
+    ]},
+  { cat: "story", name: "First Era: The Age of the Unfledged", icon: "book",
+    summary: "The opening era. You are newly hatched and understand almost nothing.",
+    tags: ["era", "first era"],
+    info: [["Chapters", "Chapter 1: The First Molt"]],
+    text: [
+      "The first era of the story. The Hatchling is born with very little understanding of the world, barely even knowing the one who raised them."
+    ]},
+  { cat: "story", name: "Chapter 1: The First Molt", icon: "centipede",
+    summary: "The first main quest. You find something you were never meant to see.",
+    tags: ["chapter 1", "main quest", "garrisons", "molters", "coilborn"],
+    info: [["Era", "The Age of the Unfledged"], ["Type", "Main quest"], ["Key characters", "Ossith, Senn"], ["Followed by", "Chapter 1.1"]],
+    text: [
+      "You are born with very little understanding of the world around you. You wonder what you were born for, and what the point of existing is. While wandering, you stumble upon something you should not have: Garrisons guarding something that seems to be alive. You cannot get a good look at it. As you creep closer the Garrisons spot you, and you are forced to fight them."
+    ],
+    sections: [
+      { label: "New questline", title: "Delivery",
+        text: ["After beating the Garrisons you run and tell the Molters. The town thinks you are crazy. Someone overhears and calls out to you. His name is Ossith, and he tells you to keep quiet and never speak of it in public. You ask why, and his answer is something you cannot comprehend. You tell him what you saw. He says he understands, and gives you a task: deliver a letter to Senn, an old friend of his and the leader of the Coilborn."] },
+      { label: "New questline", title: "Delivering + Fighting",
+        text: ["You follow the coordinates Ossith gave you. On the way you are ordered to stop. You say Ossith sent you, but the Carapace do not believe you, and you are forced to fight. After you beat one of them, a figure hears the noise and comes down. It is Senn. You tell him Ossith sent you and hand over the letter. It seems Ossith never warned the Carapace, and had marked the letter with a symbol only Senn would know. Senn laughs about it. You are a bit annoyed, because it almost got you killed."] },
+      { label: "New questline", title: "Fighting + Taking the Item",
+        text: ["Senn tasks you with retrieving an item from one of the Molters. On your way back to the settlement, something feels terribly wrong. The Molters who once raised and cared for you now stare at you with open hostility. Their movements are erratic and their killing intent is impossible to ignore. You hesitate, hoping you can still reason with them, but when they attack you have no choice but to fight back. By the time it is over, the settlement no longer feels like home."] },
+      { label: "New questline", title: "Introduction to Another Chapter",
+        text: ["You bring the item back to Senn, wondering what could have driven the Molters mad. Senn tells you why he started his own faction apart from the Molters. After you discovered what you saw, the Molters turned hostile toward him and the other members of his faction too, and some even died. He already has some clues but is not sure, so he gives you a new quest: venture deep into Nethermere."] }
+    ]},
+
+  /* ---------------- CHARACTERS ---------------- */
+  { cat: "char", name: "The Hatchling", icon: "centipede",
+    summary: "You. Newly hatched, nameless, and still soft-shelled.",
+    tags: ["player", "protagonist"],
+    info: [["Role", "Player character"], ["Raised by", "The Molters"], ["Introduced in", "Prologue: The Wrapping"]],
+    text: [
+      "The player character. The Wrapping takes your name, face and the road behind you, and the world builds you again from what is left.",
+      "You were raised by the Molters but barely know them. You begin without understanding of the world, wondering what you were born for."
+    ]},
+  { cat: "char", name: "The Molters", icon: "shield", aka: ["Molter"],
+    summary: "Elder centipedes who raised the Hatchling. They turn hostile after the Garrison discovery.",
+    tags: ["elders", "settlement", "hostile"],
+    info: [["Type", "Elder Centipedes"], ["Role", "Raised the Hatchling; settlement elders"], ["First seen", "Chapter 1: The First Molt"]],
+    text: [
+      "The elder centipedes who raised and cared for the Hatchling. When the Hatchling speaks of what the Garrisons were guarding, the town thinks them crazy.",
+      "Later the Molters turn on the Hatchling with erratic movement and clear killing intent, and have also turned hostile toward Senn and the Coilborn. What drove them to this is not yet known."
+    ]},
+  { cat: "char", name: "Ossith", icon: "key",
+    summary: "Main quest NPC. Senn's right hand man, who tells you to keep quiet.",
+    tags: ["main quest", "npc", "coilborn"],
+    info: [["Role", "Main quest NPC"], ["Allied with", "Senn"], ["First seen", "Chapter 1: The First Molt"]],
+    text: [
+      "He overhears the Hatchling talking about the Garrisons and warns them never to speak of it in public. He gives the Hatchling a letter to deliver to Senn, marked with a symbol only Senn would know.",
+      "He did not warn the Carapace that a messenger was coming."
+    ]},
+  { cat: "char", name: "Senn", icon: "crown",
+    summary: "Faction leader of the Coilborn. Left the Molters and started his own faction.",
+    tags: ["main quest", "coilborn", "leader"],
+    info: [["Role", "Main quest NPC, faction leader"], ["Faction", "The Coilborn"], ["Right hand", "Ossith"], ["First seen", "Chapter 1: The First Molt"]],
+    text: [
+      "Leader of the Coilborn, and a friend of Ossith. After the Garrison discovery the Molters turned hostile toward him and his faction, and some of his people died.",
+      "He has clues about what is happening but is not sure yet, and sends the Hatchling deep into Nethermere."
+    ]},
+  { cat: "char", name: "The Carapace", icon: "beetle", 
+    summary: "Coilborn guards. They attack first and ask later.",
+    tags: ["coilborn", "guards"],
+    info: [["Faction", "The Coilborn"], ["First seen", "Chapter 1: The First Molt"]],
+    text: ["The guards of the Coilborn. They do not believe the Hatchling is Ossith's messenger and have to be fought before Senn comes down."]},
+  { cat: "char", name: "The Garrisons", icon: "tower", aka: ["Garrison"],
+    summary: "Guards watching over something living that you were not meant to see.",
+    tags: ["guards", "mystery"],
+    info: [["First seen", "Chapter 1: The First Molt"]],
+    text: ["Soldiers guarding something that seems to be alive. They attack the Hatchling on sight."]},
+
+  /* ---------------- FACTIONS ---------------- */
+  { cat: "faction", name: "The Coilborn", icon: "centipede",
+    summary: "Senn's faction, split away from the Molters. Guarded by the Carapace.",
+    tags: ["senn", "ossith", "carapace", "main quest"],
+    info: [["Leader", "Senn"], ["Right hand", "Ossith"], ["Guards", "The Carapace"], ["Founded", "After Senn broke from the Molters"]],
+    text: [
+      "A faction founded by Senn apart from the Molters. After the Hatchling saw what the Garrisons were guarding, the Molters turned hostile toward the Coilborn too, and some members died.",
+      "They are the Hatchling's first allies."
+    ]}
+];
+/* ===================== END OF EDITABLE SECTION ===================== */
+
+
+/* ---------- everything below is the page machinery ---------- */
+var ICONS={
+ centipede:'<path d="M6 40c14-14 26 14 40-2s20-8 28-14"/><path d="M14 34v-9M24 40v9M34 33v-9M44 38v9M54 30v-9M64 29v9"/>',
+ beetle:'<ellipse cx="40" cy="38" rx="20" ry="14"/><path d="M40 24v28M22 30l-10-8M22 46l-10 8M58 30l10-8M58 46l10 8M34 24l-4-9M46 24l4-9"/>',
+ moth:'<path d="M40 22v34M40 30C28 14 12 20 14 36c2 10 18 8 26-6M40 30c12-16 28-10 26 6-2 10-18 8-26-6M36 22l-6-8M44 22l6-8"/>',
+ ant:'<circle cx="22" cy="40" r="7"/><circle cx="40" cy="40" r="6"/><ellipse cx="60" cy="40" rx="10" ry="8"/><path d="M38 34l-6-12M44 34l4-12M40 46v12M30 44l-8 12M50 44l8 12"/>',
+ eye:'<path d="M6 32c14-18 54-18 68 0-14 18-54 18-68 0z"/><circle cx="40" cy="32" r="9"/>',
+ crown:'<path d="M14 50V22l14 14 12-18 12 18 14-14v28zM14 58h52"/>',
+ sword:'<path d="M40 4l5 8v32H35V12z"/><path d="M28 44h24M40 44v14M36 60h8"/>',
+ potion:'<path d="M34 6h12M36 6v16L24 46a8 8 0 0 0 7 12h18a8 8 0 0 0 7-12L44 22V6"/><path d="M28 40h24"/>',
+ key:'<circle cx="22" cy="32" r="10"/><path d="M32 32h40M60 32v10M68 32v8"/>',
+ tower:'<path d="M24 60V20h32v40M20 20h40M24 12v8M34 12v8M46 12v8M56 12v8M34 60V46a6 6 0 0 1 12 0v14"/>',
+ cave:'<path d="M6 58C10 30 24 12 40 12s30 18 34 46M24 58c2-14 8-22 16-22s14 8 16 22"/>',
+ book:'<path d="M12 12h22c4 0 6 2 6 6v40c0-4-2-6-6-6H12zM68 12H46c-4 0-6 2-6 6v40c0-4 2-6 6-6h22z"/>',
+ shield:'<path d="M40 6l24 8v18c0 14-10 22-24 26C26 54 16 46 16 32V14z"/>'
+};
+var PIX={"eye": ["................", "................", "................", "....########....", "..##........##..", ".#....####....#.", "#....######....#", "#...###..###...#", "#...###..###...#", "#....######....#", ".#....####....#.", "..##........##..", "....########....", "................", "................", "................"], "book": ["................", "..############..", "..#..........#..", "..#....##....#..", "..#....##....#..", "..#..######..#..", "..#..######..#..", "..#....##....#..", "..#....##....#..", "..#....##....#..", "..#..........#..", "..############..", "..############..", "................", "................", "................"], "centipede": ["................", "....#.....#.....", ".....#...#......", "......###.......", "..##.#####.##...", "......###.......", "..##.#####.##...", ".......###......", "...##.#####.##..", ".......###......", "....##.####.##..", ".......###......", ".....##.###.##..", "........##......", "................", "................"], "shield": ["................", "..############..", "..############..", "..##........##..", "..##..####..##..", "..##..####..##..", "..##........##..", "..##........##..", "...##......##...", "...##..##..##...", "....##....##....", ".....##..##.....", "......####......", "................", "................", "................"], "key": ["................", "................", ".....####.......", "....##..##......", "....##..##......", ".....####.......", "......##........", "......##........", "......##........", "......####......", "......##........", "......####......", "......##........", "................", "................", "................"], "crown": ["................", "................", "..#....##....#..", "..##..####..##..", "..############..", "..############..", "..##..####..##..", "..############..", "..############..", "................", "................", "................", "................", "................", "................", "................"], "beetle": ["................", "...#........#...", "....#......#....", ".....######.....", "...##########...", ".###...##...###.", "#..#...##...#..#", "...#...##...#...", "..###..##..###..", "..#....##....#..", "..###..##..###..", "....########....", ".....######.....", "................", "................", "................"], "tower": ["................", "..##..####..##..", "..##..####..##..", "..############..", "...##########...", "...##......##...", "...##..##..##...", "...##..##..##...", "...##......##...", "...##..##..##...", "...##..##..##...", "...##......##...", "..############..", "..############..", "................", "................"]};
+function pix(rows){var d="",re=/#+/g,m,y;for(y=0;y<rows.length;y++){re.lastIndex=0;while((m=re.exec(rows[y])))d+="M"+m.index+" "+y+"h"+m[0].length+"v1h-"+m[0].length+"z"}return '<svg class="px" viewBox="0 0 16 16" aria-hidden="true"><path d="'+d+'"/></svg>'}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+function icon(n){if(PIX[n])return pix(PIX[n]);return ICONS[n]?'<svg viewBox="0 0 80 64" aria-hidden="true">'+ICONS[n]+'</svg>':""}
+function catLabel(id){for(var i=0;i<CATS.length;i++)if(CATS[i].id===id)return CATS[i].label;return id}
+function catSingle(id){var l=catLabel(id);return l.replace(/ies$/,"y").replace(/s$/,"")}
+function pips(n){var h='<span class="pips" aria-label="Threat '+n+' of 5"><small>THREAT</small>';for(var k=1;k<=5;k++)h+='<i'+(k<=n?' class="f"':'')+'></i>';return h+'</span>'}
+
+ENTRIES.forEach(function(e){
+  e.id=e.cat+"-"+slug(e.name);
+  var bits=[e.name,e.summary,catLabel(e.cat),catSingle(e.cat),(e.tags||[]).join(" "),(e.text||[]).join(" ")];
+  (e.sections||[]).forEach(function(x){bits.push(x.title||"",(x.text||[]).join(" "))});
+  (e.info||[]).forEach(function(r){bits.push(r[0],r[1])});
+  e.hay=bits.join(" ").toLowerCase();
+});
+
+var state={cat:"all",q:""};
+var gridEl=document.getElementById("grid"),qEl=document.getElementById("q"),countEl=document.getElementById("count"),emptyEl=document.getElementById("empty"),searchEl=document.querySelector(".search");
+
+function score(e,terms,full){
+  var n=e.name.toLowerCase(),s=0;
+  if(n===full)s+=100;else if(n.indexOf(full)===0)s+=50;else if(n.indexOf(full)>-1)s+=30;
+  terms.forEach(function(t){if(n.indexOf(t)>-1)s+=10;if((e.tags||[]).join(" ").toLowerCase().indexOf(t)>-1)s+=5});
+  return s;
+}
+function results(){
+  var full=state.q.trim().toLowerCase(),terms=full?full.split(/\s+/):[];
+  var list=ENTRIES.filter(function(e){
+    if(state.cat!=="all"&&e.cat!==state.cat)return false;
+    return terms.every(function(t){return e.hay.indexOf(t)>-1});
+  });
+  if(terms.length)list=list.map(function(e,i){return{e:e,s:score(e,terms,full),i:i}}).sort(function(a,b){return b.s-a.s||a.i-b.i}).map(function(x){return x.e});
+  return list;
+}
+function cardHtml(e){
+  return '<button type="button" class="card" data-id="'+esc(e.id)+'"><div class="art"><span class="tag">'+esc(catSingle(e.cat))+'</span>'+icon(e.icon)+'</div><div class="txt"><h3 class="black">'+esc(e.name)+'</h3><p>'+esc(e.summary||"")+'</p>'+(e.threat?pips(e.threat):'')+'</div></button>';
+}
+var animateNext=true;
+function render(){
+  var list=results(),h="",an=animateNext;animateNext=false;
+  if(state.cat==="all"&&!state.q.trim()){
+    CATS.forEach(function(c){
+      var items=list.filter(function(e){return e.cat===c.id});
+      if(!items.length)return;
+      h+='<div class="sec"><h2 class="black">'+esc(c.label)+'</h2>'+(c.blurb?'<p>'+esc(c.blurb)+'</p>':'')+'<span class="seg-line"></span><small>'+items.length+'</small></div><div class="cards">'+items.map(cardHtml).join("")+'</div>';
+    });
+  }else h='<div class="cards">'+list.map(cardHtml).join("")+'</div>';
+  gridEl.innerHTML=h;
+  gridEl.classList.remove("anim");
+  if(an){
+    [].forEach.call(gridEl.querySelectorAll(".sec,.card"),function(el,i){el.style.setProperty("--i",Math.min(i,14))});
+    void gridEl.offsetWidth;gridEl.classList.add("anim");
+  }
+  emptyEl.hidden=list.length>0;
+  countEl.textContent=(list.length+(list.length===1?" ENTRY":" ENTRIES")+(state.q?' FOR \u201C'+state.q.trim().toUpperCase()+'\u201D':"")).toUpperCase();
+  searchEl.classList.toggle("has",!!state.q);
+  [].forEach.call(document.querySelectorAll(".chip"),function(c){c.classList.toggle("on",c.dataset.cat===state.cat);c.setAttribute("aria-selected",c.dataset.cat===state.cat)});
+}
+function buildChips(){
+  var h='<button class="chip" type="button" role="tab" data-cat="all">ALL<b>'+ENTRIES.length+'</b></button>';
+  CATS.forEach(function(c){
+    var n=ENTRIES.filter(function(e){return e.cat===c.id}).length;
+    if(n)h+='<button class="chip" type="button" role="tab" data-cat="'+esc(c.id)+'">'+esc(c.label).toUpperCase()+'<b>'+n+'</b></button>';
+  });
+  document.getElementById("chips").innerHTML=h;
+}
+
+/* auto-links: names of characters and factions become clickable */
+var LINK_CATS={char:1,faction:1},linkMap={},linkRe=null;
+(function(){
+  var terms=[];
+  ENTRIES.forEach(function(e){
+    if(!LINK_CATS[e.cat])return;
+    var names=[e.name.replace(/^The\s+/i,"")].concat(e.aka||[]);
+    names.forEach(function(n){var k=n.toLowerCase();if(!linkMap[k]){linkMap[k]=e.id;terms.push(n)}});
+  });
+  terms.sort(function(a,b){return b.length-a.length});
+  if(terms.length)linkRe=new RegExp("\\b("+terms.join("|")+")\\b","gi");
+})();
+function rich(text,selfId){
+  var h=esc(text);if(!linkRe)return h;
+  return h.replace(linkRe,function(m){var id=linkMap[m.toLowerCase()];return id&&id!==selfId?'<a class="xl" href="#'+id+'">'+m+'</a>':m});
+}
+
+/* detail sheet */
+var modal=document.getElementById("modal"),mbody=document.getElementById("mbody"),lastFocus=null;
+function find(id){for(var i=0;i<ENTRIES.length;i++)if(ENTRIES[i].id===id)return ENTRIES[i];return null}
+function openEntry(id,silent){
+  var e=find(id);if(!e)return;
+  var info="";
+  if(e.info&&e.info.length){info='<dl class="info">'+e.info.map(function(r){return '<dt>'+esc(r[0])+'</dt><dd>'+rich(r[1],e.id)+'</dd>'}).join("")+'</dl>'}
+  var tags=(e.tags&&e.tags.length)?'<div class="tags">'+e.tags.map(function(t){return '<button type="button" data-tag="'+esc(t)+'">#'+esc(t)+'</button>'}).join("")+'</div>':"";
+  var secs=(e.sections||[]).map(function(x,i){
+    return '<section class="quest"><div class="q-label">'+esc(x.label||"Part")+' \u00b7 '+(i+1)+'</div>'+(x.title?'<h3 class="black">'+rich(x.title,e.id)+'</h3>':'')+(x.text||[]).map(function(t){return '<p>'+rich(t,e.id)+'</p>'}).join("")+'</section>';
+  }).join("");
+  mbody.innerHTML=(icon(e.icon)?'<div class="art">'+icon(e.icon)+'</div>':"")+
+    '<div class="in"><span class="tag">'+esc(catSingle(e.cat))+'</span><h2 id="m-title" class="black">'+esc(e.name)+'</h2>'+
+    (e.summary?'<p class="sum">'+rich(e.summary,e.id)+'</p>':"")+(e.threat?pips(e.threat)+'<div style="height:1.2rem"></div>':"")+info+
+    '<div class="body'+(e.style==="verse"?' verse':'')+'">'+(e.text||[]).map(function(t){return '<p>'+rich(t,e.id)+'</p>'}).join("")+'</div>'+secs+tags+'</div>';
+  if(!modal.hidden===false)lastFocus=document.activeElement;
+  var wasOpen=!modal.hidden&&!modal.classList.contains("out");
+  clearTimeout(closeT);modal.classList.remove("out");
+  var inn=mbody.querySelector(".in");if(wasOpen&&inn){inn.classList.add("swap");mbody.querySelectorAll(".quest").forEach(function(q){q.style.animation="none"})}
+  modal.hidden=false;modal.scrollTop=0;document.body.classList.add("noscroll");
+  document.getElementById("mclose").focus();
+  if(!silent&&location.hash!=="#"+id){try{history.pushState(null,"","#"+id)}catch(x){}}
+}
+var closeT=0;
+function closeEntry(silent){
+  if(modal.hidden||modal.classList.contains("out"))return;
+  modal.classList.add("out");document.body.classList.remove("noscroll");
+  closeT=setTimeout(function(){modal.hidden=true;modal.classList.remove("out")},180);
+  if(!silent&&location.hash){try{history.replaceState(null,"",location.pathname+location.search)}catch(x){}}
+  if(lastFocus&&lastFocus.focus)try{lastFocus.focus()}catch(x){}
+}
+function route(){
+  var id=decodeURIComponent((location.hash||"").slice(1));
+  if(id&&find(id))openEntry(id,true);else closeEntry(true);
+}
+
+/* events */
+document.getElementById("chips").addEventListener("click",function(ev){
+  var b=ev.target.closest(".chip");if(!b)return;state.cat=b.dataset.cat;animateNext=true;render();
+});
+gridEl.addEventListener("click",function(ev){var c=ev.target.closest(".card");if(c)openEntry(c.dataset.id)});
+qEl.addEventListener("input",function(){state.q=qEl.value;render()});
+document.getElementById("clear").onclick=function(){qEl.value="";state.q="";animateNext=true;render();qEl.focus()};
+document.getElementById("mclose").onclick=function(){closeEntry()};
+modal.addEventListener("click",function(ev){if(ev.target===modal)closeEntry()});
+mbody.addEventListener("click",function(ev){
+  var l=ev.target.closest("a.xl");
+  if(l){ev.preventDefault();openEntry(l.getAttribute("href").slice(1));return}
+  var t=ev.target.closest("[data-tag]");if(!t)return;
+  closeEntry();state.cat="all";state.q=t.dataset.tag;qEl.value=state.q;animateNext=true;render();
+  window.scrollTo({top:0});
+});
+document.addEventListener("keydown",function(ev){
+  if(ev.key==="Escape"&&!modal.hidden){closeEntry();return}
+  var tg=ev.target&&ev.target.tagName;
+  if(ev.key==="/"&&tg!=="INPUT"&&tg!=="TEXTAREA"&&modal.hidden&&!document.body.classList.contains("locked")){ev.preventDefault();qEl.focus();qEl.select()}
+});
+window.addEventListener("hashchange",route);
+
+/* gate */
+var body=document.body;
+function unlock(){body.classList.remove("locked");route()}
+try{if(sessionStorage.getItem("nm-ok")==="1")body.classList.remove("locked")}catch(e){}
+document.getElementById("enter").onclick=function(){try{sessionStorage.setItem("nm-ok","1")}catch(e){}unlock()};
+document.getElementById("back").onclick=function(){
+  if(history.length>1)history.back();
+  else document.querySelector("#gate p").textContent="You can close this tab whenever you like.";
+};
+
+/* start */
+document.title=SITE.title+" Wiki";
+document.getElementById("h-title").textContent=SITE.title;
+document.getElementById("h-sub").textContent=SITE.tagline;
+document.getElementById("f-title").textContent=SITE.title.toUpperCase();
+document.getElementById("f-text").textContent=SITE.footer;
+function renderCredits(){
+  var el=document.getElementById("credits");
+  if(!el||!CREDITS.length){if(el)el.hidden=true;return}
+  el.innerHTML='<h2 id="cr-h" class="black">Credits</h2><div class="cr-list">'+CREDITS.map(function(g){
+    return '<div class="cr-row"><div class="cr-role">'+esc(g.role)+'</div><div class="cr-people">'+g.people.map(function(p){
+      return '<div class="cr-p"><span class="cr-name">'+esc(p[0])+'</span><span class="cr-tag">'+esc(p[1])+'</span>'+(p[2]?'<span class="cr-job">'+esc(p[2])+'</span>':'')+'</div>';
+    }).join("")+'</div></div>';
+  }).join("")+'</div><p class="cr-note">Discord usernames.</p>';
+}
+renderCredits();
+buildChips();render();
+if(!body.classList.contains("locked"))route();
+</script>
+</body>
+</html>
